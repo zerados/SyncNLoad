@@ -4,41 +4,39 @@ var https = require('https');
 
 
 //variables
-var videoObject;
-
+var videoPlaylist = [];
 
 
 //functions
-server.get('/:id', function (req, res) {
+
+
+server.get('/video/:index', function (req, res) {
+	res.json(videoPlaylist[req.params.index]);
+})
+
+server.get('/videos', function (req, res) {
+	res.json(videoPlaylist);
+})
+
+server.put('/video/:id', function (req, res) {
 	var url = 'https://www.googleapis.com/youtube/v3/videos?id=' +
 	req.params.id +
 	'&key=AIzaSyD5r6DidTnUh1vfhNJ8uLA5J1ZB0RfSoGc%20&' + 
 	'part=snippet,contentDetails,statistics,status,topicDetails,player';
 
 	download(url, function (data) {
-		// see this for more information about the page: 	https://www.googleapis.com/youtube/v3/videos?id=cAiBZyTIKV4&key=AIzaSyD5r6DidTnUh1vfhNJ8uLA5J1ZB0RfSoGc%20&part=snippet,contentDetails,statistics,status,topicDetails,player
-		var jsonData = JSON.parse(data); //parse the data to a Json-object
-		res.send('<br> <h1>' + jsonData.items[0].snippet.title + ' </h1> <br>' + jsonData.items[0].player.embedHtml + '<br>' + jsonData.items[0].snippet.description);
-
-
-
-		//create videoObject
-		videoObject = {
-			title : jsonData.items[0].snippet.title,
-			description : jsonData.items[0].snippet.description,
-			player : jsonData.items[0].player.embedHtml,
-			duration : jsonData.items[0].contentDetails.duration.substring(2),
-			url : "https://www.youtube.com/watch?v=" + jsonData.items[0].id
+		//check video duration
+		if (validDuration(jsonData.items[0].contentDetails.duration)) {
+			//create videoObject
+			videoObject = {
+				title : jsonData.items[0].snippet.title,
+				description : jsonData.items[0].snippet.description,
+				player : jsonData.items[0].player.embedHtml,
+				duration : jsonData.items[0].contentDetails.duration,
+				url : "https://www.youtube.com/watch?v=" + jsonData.items[0].id
+			}
+			videoPlaylist.push(videoObject);
 		}
-
-		/*
-		console.log("title: " + videoObject.title +
-			"\ndescription: " + videoObject.description +
-			"\nduration: " + videoObject.duration +
-			"\nurl: " + videoObject.url);
-		*/
-
-		console.log(videoObject);
 	})
 })
 
@@ -57,3 +55,35 @@ function download(url, callback) {
 		callback();
 	});
 };
+
+
+function validDuration(duration) {
+	var reptms = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/;
+        var hours = 0, minutes = 0, seconds = 0, totalseconds;
+        var maxDurationInSeconds = 1800;
+
+        if (reptms.test(duration)) {
+          	var matches = reptms.exec(input);
+            if (matches[1]) hours = Number(matches[1]);
+            if (matches[2]) minutes = Number(matches[2]);
+            if (matches[3]) seconds = Number(matches[3]);
+            totalseconds = hours * 3600  + minutes * 60 + seconds;
+        	if (totalseconds < maxDurationInSeconds) {
+        		return true;
+           	}
+      	}
+      	return false;
+
+	/*
+	var maxDurationInSeconds = 60 * 30;
+	var hIndex;
+	var mIndex;
+	var sIndex;
+
+	var videoDuration = 0;
+
+	if (videoObjectArg.duration.indexOf("H")) {
+		videoDuration = videoObjectArg.duration
+	}
+	*/
+}
