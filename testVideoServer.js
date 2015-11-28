@@ -30,6 +30,7 @@ wss.on('connection', function connection(ws) {
         } else if(message.command === "join"){
             if(controlClient !== null){
                 try{
+                    clientsWaitingForUpdate.push(ws);
                     controlClient.send(JSON.stringify({"command" : "join"}))
                 } catch(err){
                     controlClient = null;
@@ -54,6 +55,4 @@ wss.on('connection', function connection(ws) {
         }
 
     });
-
-    ws.send('something');
 });

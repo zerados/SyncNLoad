@@ -43,7 +43,7 @@
                     player.playVideo();
                 } else if(data.command === "join"){
                     try{
-                        conn.send(JSON.stringify({"command": "update", "time": event.target.getCurrentTime()}));
+                        conn.send(JSON.stringify({"command": "update", "time": player.getCurrentTime()}));
                     }catch(err){
                         console.log(err)
                     }
