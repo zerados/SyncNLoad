@@ -2,7 +2,7 @@ var express = require('express');
 var server = express();
 var https = require('https');
 var mongodb = require('mongodb').MongoClient;
-var config = require('./config'); // <--------- might need a ./ before 'config'
+var config = require('./config');
 
 //variables
 var videoPlaylist = [];
@@ -43,7 +43,8 @@ server.post('/video/:id', function (req, res) {
 			//log the newly added video's title and url in the database.
 			var objectForDatabase = {
 				'title' : videoObject.title,
-				'url' : videoObject.url
+				'url' : videoObject.url,
+				'duration' : videoObject.duration
 			}
 
 			mongodb.connect(database, function (err, db) {
