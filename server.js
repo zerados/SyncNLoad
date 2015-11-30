@@ -18,13 +18,14 @@ server.get('/videos', function (req, res) {
 	res.json(videoPlaylist);
 })
 
-server.put('/video/:id', function (req, res) {
+server.post('/video/:id', function (req, res) {
 	var url = 'https://www.googleapis.com/youtube/v3/videos?id=' +
 	req.params.id +
 	'&key=AIzaSyD5r6DidTnUh1vfhNJ8uLA5J1ZB0RfSoGc%20&' + 
 	'part=snippet,contentDetails,statistics,status,topicDetails,player';
 
 	download(url, function (data) {
+		var jsonData = JSON.parse(data); //parse the data to a object.
 		//check video duration
 		if (validDuration(jsonData.items[0].contentDetails.duration)) {
 			//create videoObject
@@ -36,6 +37,9 @@ server.put('/video/:id', function (req, res) {
 				url : "https://www.youtube.com/watch?v=" + jsonData.items[0].id
 			}
 			videoPlaylist.push(videoObject);
+			res.status(201).send();
+		} else {
+			res.status(400).send();
 		}
 	})
 })
@@ -63,7 +67,7 @@ function validDuration(duration) {
         var maxDurationInSeconds = 1800;
 
         if (reptms.test(duration)) {
-          	var matches = reptms.exec(input);
+          	var matches = reptms.exec(duration);
             if (matches[1]) hours = Number(matches[1]);
             if (matches[2]) minutes = Number(matches[2]);
             if (matches[3]) seconds = Number(matches[3]);
