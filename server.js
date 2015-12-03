@@ -1,36 +1,37 @@
-var express = require('express');
-var server = express();
-var https = require('https');
+var server = require('http').createServer()
+	, url = require('url')
+	, WebSocketServer = require('ws').Server
+	, wss = new WebSocketServer({ server: server })
+	, express = require('express')
+	, app = express()
+	, port = process.env.PORT || 5600;
+
+
 var mongodb = require('mongodb').MongoClient;
 var config = require('./config');
-
-//port
-var port = process.env.PORT || 5600;
-//ws stuff
-var controlClient = null;
-var WebSocketServer = require('ws').Server
-	, wss = new WebSocketServer({ port: port });
+var https = require('https');
 
 //variables
 var videoPlaylist = [];
+var controlClient = null;
 var database = config.dbUrl;
 
 //functions
-server.all('*', function(req, res, next) {
+app.all('*', function(req, res, next) {
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Headers", "X-Requested-With");
 	next();
 });
-server.get('/video/:index', function (req, res, next) {
+app.get('/video/:index', function (req, res, next) {
 	res.json(videoPlaylist[req.params.index]);
 	next();
 })
 
-server.get('/videos', function (req, res, next) {
+app.get('/videos', function (req, res, next) {
 	res.json(videoPlaylist);
 	next()
 })
-server.delete('/video/:index', function (req, res) {
+app.delete('/video/:index', function (req, res) {
 	var success = false;
 	var videoToBeRemoved = videoPlaylist[req.params.index];
 
@@ -44,12 +45,12 @@ server.delete('/video/:index', function (req, res) {
 		res.status(404).send();
 	}
 })
-server.post('/video/:id', function (req, res, next) {
+app.post('/video/:id', function (req, res, next) {
 
 	var url = 'https://www.googleapis.com/youtube/v3/videos?id=' +
-	req.params.id +
-	'&key=AIzaSyD5r6DidTnUh1vfhNJ8uLA5J1ZB0RfSoGc%20&' + 
-	'part=snippet,contentDetails,statistics,status,topicDetails,player';
+		req.params.id +
+		'&key=AIzaSyD5r6DidTnUh1vfhNJ8uLA5J1ZB0RfSoGc%20&' +
+		'part=snippet,contentDetails,statistics,status,topicDetails,player';
 
 	download(url, function (data) {
 		var jsonData = JSON.parse(data); //parse the data to a object.
@@ -91,9 +92,6 @@ server.post('/video/:id', function (req, res, next) {
 		next();
 	})
 })
-
-//Socket stuff
-
 wss.broadcast = function broadcast(data, messageClient) {
 	wss.clients.forEach(function each(client) {
 		if(messageClient != client){
@@ -147,7 +145,6 @@ wss.on('connection', function connection(ws) {
 
 	});
 });
-server.listen(port);
 
 function download(url, callback) {
 	https.get(url, function(res) {
@@ -163,34 +160,36 @@ function download(url, callback) {
 	});
 };
 
-
 function validDuration(duration) {
 	var reptms = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/;
-        var hours = 0, minutes = 0, seconds = 0, totalInSeconds;
-        var maxDurationInSeconds = 1800;
+	var hours = 0, minutes = 0, seconds = 0, totalInSeconds;
+	var maxDurationInSeconds = 1800;
 
-        if (reptms.test(duration)) {
-          	var matches = reptms.exec(duration);
-            if (matches[1]) hours = Number(matches[1]);
-            if (matches[2]) minutes = Number(matches[2]);
-            if (matches[3]) seconds = Number(matches[3]);
-            totalInSeconds = hours * 3600  + minutes * 60 + seconds;
-        	if (totalInSeconds < maxDurationInSeconds) {
-        		return true;
-           	}
-      	}
-      	return false;
+	if (reptms.test(duration)) {
+		var matches = reptms.exec(duration);
+		if (matches[1]) hours = Number(matches[1]);
+		if (matches[2]) minutes = Number(matches[2]);
+		if (matches[3]) seconds = Number(matches[3]);
+		totalInSeconds = hours * 3600  + minutes * 60 + seconds;
+		if (totalInSeconds < maxDurationInSeconds) {
+			return true;
+		}
+	}
+	return false;
 
 	/*
-	var maxDurationInSeconds = 60 * 30;
-	var hIndex;
-	var mIndex;
-	var sIndex;
+	 var maxDurationInSeconds = 60 * 30;
+	 var hIndex;
+	 var mIndex;
+	 var sIndex;
 
-	var videoDuration = 0;
+	 var videoDuration = 0;
 
-	if (videoObjectArg.duration.indexOf("H")) {
-		videoDuration = videoObjectArg.duration
-	}
-	*/
+	 if (videoObjectArg.duration.indexOf("H")) {
+	 videoDuration = videoObjectArg.duration
+	 }
+	 */
 }
+
+server.on('request', app);
+server.listen(port, function () { console.log('Listening on ' + server.address().port) });
