@@ -12,6 +12,7 @@ var config = require('./config');
 var https = require('https');
 
 //variables
+var clientsWaitingForUpdate = [];
 var videoPlaylist = [];
 var controlClient = null;
 var database = config.dbUrl;
