@@ -9,14 +9,27 @@ var videoPlaylist = [];
 var database = config.dbUrl;
 
 //functions
-
-
 server.get('/video/:index', function (req, res) {
 	res.json(videoPlaylist[req.params.index]);
 })
 
 server.get('/videos', function (req, res) {
 	res.json(videoPlaylist);
+})
+
+server.delete('/video/:index', function (req, res) {
+	var success = false;
+	var videoToBeRemoved = videoPlaylist[req.params.index];
+
+	videoPlaylist.splice(videoToBeRemoved, 1);
+
+	if (videoToBeRemoved !== videoPlaylist[req.params.id]) {
+		//statuscode for successful deletion...
+		res.status(200).send();
+	} else {
+		//statuscode for failure...
+		res.status(404).send();
+	}
 })
 
 server.post('/video/:id', function (req, res) {
@@ -63,6 +76,9 @@ server.post('/video/:id', function (req, res) {
 		}
 	})
 })
+
+
+
 
 server.listen(5600);
 
