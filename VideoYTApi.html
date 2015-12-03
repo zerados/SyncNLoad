@@ -17,7 +17,7 @@
     }
     <!-- should be custom username but fuck doing that now -->
     var name = "user"+parseInt(99999*Math.random());
-    var conn = new WebSocket("ws://localhost:8000/AMG/test/wtf");
+    var conn = new WebSocket("ws://syncnload.azurewebsites.net");
     conn.onmessage = function(ev){
         try{
             var data = JSON.parse(ev.data)

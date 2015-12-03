@@ -4,10 +4,12 @@ var https = require('https');
 var mongodb = require('mongodb').MongoClient;
 var config = require('./config');
 
+//port
+var port = process.env.PORT || 5600;
 //ws stuff
 var controlClient = null;
 var WebSocketServer = require('ws').Server
-	, wss = new WebSocketServer({ port: 8000 });
+	, wss = new WebSocketServer({ port: port });
 
 //variables
 var videoPlaylist = [];
@@ -145,7 +147,7 @@ wss.on('connection', function connection(ws) {
 
 	});
 });
-server.listen(process.env.PORT || 5600);
+server.listen(port);
 
 function download(url, callback) {
 	https.get(url, function(res) {
