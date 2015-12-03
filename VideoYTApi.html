@@ -91,7 +91,7 @@
 
     // 2. This code loads the IFrame Player API code asynchronously.
     ajaxGet(
-            'http://localhost:5600/video/0',
+            'http://syncnload.azurewebsites.net/video/0',
             function (response) {
                 videoId = JSON.parse(response).id
                 testing()
