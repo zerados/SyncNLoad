@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<body>
+<!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+<div id="player"></div>
+<br>
+<input id="power" type="button" value="gief control plz" onclick="changeControl()">
+<!-- connection script and shit -->
+<script>
+    var control = false;
+    function changeControl(){
+        if(control){
+            conn.send(JSON.stringify({"command": "changeControl"}));
+        } else{
+            conn.send(JSON.stringify({"command": "changeControl"}));
+        }
+    }
+    <!-- should be custom username but fuck doing that now -->
+    var name = "user"+parseInt(99999*Math.random());
+    var conn = new WebSocket("ws://localhost:8000/AMG/test/wtf");
+    conn.onmessage = function(ev){
+        try{
+            var data = JSON.parse(ev.data)
+            console.log("this is the command : " + data.command)
+            //used to check for control but this is now moved serverside. messages no longer arrive without being controlling
+            if(true){
+                if(data.command === "changeControl"){
+                    var button = document.getElementById("power")
+                    if(data.control === true){
+                        button.value = "give up control"
+                        control = true;
+                    } else if(data.control === false){
+                        button.value = "take control"
+                        control = false;
+                    }
+                } else if(data.command === "pause"){
+                    player.pauseVideo();
+                } else if(data.command === "play"){
+                    var timeDifference = player.getCurrentTime() - data.time;
+                    if(timeDifference > 5 || timeDifference < -5){
+                        player.seekTo(data.time);
+                    }
+                    player.playVideo();
+                } else if(data.command === "join"){
+                    try{
+                        conn.send(JSON.stringify({"command": "update", "time": player.getCurrentTime()}));
+                    }catch(err){
+                        console.log(err)
+                    }
+
+                } else if(data.command === "update"){
+                    player.seekTo(data.time);
+                    player.playVideo();
+                }
+            }
+        } catch(err){
+            console.log(err);
+        }
+
+    }
+
+</script>
+<!-- youtube script -->
+<script>
+    //get json method downloaded from stackoverflow suggested by http://stackoverflow.com/users/610573/chris-baker
+    var ajaxGet = function (url, callback) {
+        var callback = (typeof callback == 'function' ? callback : false), xhr = null;
+        try {
+            xhr = new XMLHttpRequest();
+        } catch (e) {
+            try {
+                ajxhrax = new ActiveXObject("Msxml2.XMLHTTP");
+            } catch (e) {
+                xhr = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+        }
+        if (!xhr)
+            return null;
+        xhr.open("GET", url,true);
+        xhr.onreadystatechange=function() {
+            if (xhr.readyState==4 && callback) {
+                callback(xhr.responseText)
+            }
+        }
+        xhr.send(null);
+        return xhr;
+    }
+
+    var videoId = 'cAiBZyTIKV4';
+
+
+    // 2. This code loads the IFrame Player API code asynchronously.
+    ajaxGet(
+            'http://localhost:5600/video/0',
+            function (response) {
+                videoId = JSON.parse(response).id
+                testing()
+            });
+    function testing(){
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
+    }
+
+
+
+
+    // 3. This function creates an <iframe> (and YouTube player)
+    //    after the API code downloads.
+    var player;
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+            height: '390',
+            width: '640',
+            videoId: videoId,
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+            }
+        });
+    }
+    // 4. The API will call this function when the video player is ready.
+    function onPlayerReady(event) {
+        conn.send(JSON.stringify({"command" : "join"}))
+    }
+
+    // 5. The API calls this function when the player's state changes.
+    //    The function indicates that when playing a video (state=1),
+    //    the player should play for six seconds and then stop.
+    function onPlayerStateChange(event) {
+        if(event.data == YT.PlayerState.PAUSED){
+            if(control){
+                conn.send(JSON.stringify({"command": "pause", "time": event.target.getCurrentTime()}));
+            }
+        } else if (event.data == YT.PlayerState.PLAYING) {
+            if(control){
+                conn.send(JSON.stringify({"command": "play", "time": event.target.getCurrentTime()}));
+            }
+            else if(event.data == YT.PlayerState.ENDED){
+                videoEnded();
+            }
+        }
+    }
+    function videoEnded(){
+        //placeholder function for user to overwrite
+    }
+    function stopVideo() {
+        player.stopVideo();
+    }
+
+
+</script>
+</body>
+</html>
