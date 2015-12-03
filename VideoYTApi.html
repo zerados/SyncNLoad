@@ -5,7 +5,7 @@
 <div id="player"></div>
 <br>
 <input id="power" type="button" value="gief control plz" onclick="changeControl()">
-<!-- connection script -->
+<!-- connection script and shit -->
 <script>
     var control = false;
     function changeControl(){
@@ -62,13 +62,49 @@
 </script>
 <!-- youtube script -->
 <script>
-    var videoId = 'cAiBZyTIKV4';
-    // 2. This code loads the IFrame Player API code asynchronously.
-    var tag = document.createElement('script');
+    //get json method downloaded from stackoverflow suggested by http://stackoverflow.com/users/610573/chris-baker
+    var ajaxGet = function (url, callback) {
+        var callback = (typeof callback == 'function' ? callback : false), xhr = null;
+        try {
+            xhr = new XMLHttpRequest();
+        } catch (e) {
+            try {
+                ajxhrax = new ActiveXObject("Msxml2.XMLHTTP");
+            } catch (e) {
+                xhr = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+        }
+        if (!xhr)
+            return null;
+        xhr.open("GET", url,true);
+        xhr.onreadystatechange=function() {
+            if (xhr.readyState==4 && callback) {
+                callback(xhr.responseText)
+            }
+        }
+        xhr.send(null);
+        return xhr;
+    }
 
-    tag.src = "https://www.youtube.com/iframe_api";
-    var firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    var videoId = 'cAiBZyTIKV4';
+
+
+    // 2. This code loads the IFrame Player API code asynchronously.
+    ajaxGet(
+            'http://localhost:5600/video/0',
+            function (response) {
+                videoId = JSON.parse(response).id
+                testing()
+            });
+    function testing(){
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
+    }
+
+
+
 
     // 3. This function creates an <iframe> (and YouTube player)
     //    after the API code downloads.
@@ -112,6 +148,8 @@
     function stopVideo() {
         player.stopVideo();
     }
+
+
 </script>
 </body>
 </html>

@@ -15,16 +15,22 @@ var database = config.dbUrl;
 
 //functions
 
-
-server.get('/video/:index', function (req, res) {
+server.all('/', function(req, res, next) {
+	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Headers", "X-Requested-With");
+	next();
+});
+server.get('/video/:index', function (req, res, next) {
 	res.json(videoPlaylist[req.params.index]);
+	next();
 })
 
-server.get('/videos', function (req, res) {
+server.get('/videos', function (req, res, next) {
 	res.json(videoPlaylist);
+	next()
 })
 
-server.post('/video/:id', function (req, res) {
+server.post('/video/:id', function (req, res, next) {
 	var url = 'https://www.googleapis.com/youtube/v3/videos?id=' +
 	req.params.id +
 	'&key=AIzaSyD5r6DidTnUh1vfhNJ8uLA5J1ZB0RfSoGc%20&' + 
@@ -37,6 +43,7 @@ server.post('/video/:id', function (req, res) {
 			//create videoObject.
 			videoObject = {
 				title : jsonData.items[0].snippet.title,
+				id : jsonData.items[0].id,
 				description : jsonData.items[0].snippet.description,
 				player : jsonData.items[0].player.embedHtml,
 				duration : jsonData.items[0].contentDetails.duration,
@@ -66,6 +73,7 @@ server.post('/video/:id', function (req, res) {
 		} else {
 			res.status(400).send();
 		}
+		next();
 	})
 })
 
