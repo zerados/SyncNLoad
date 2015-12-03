@@ -18,6 +18,10 @@
   "homepage": "https://github.com/zerados/SyncNLoad#readme",
   "dependencies": {
     "express": "^4.13.3",
+<<<<<<< HEAD
     "ws": "^0.8.0"
+=======
+    "mongodb": "^2.0.49"
+>>>>>>> f080e1018dc673d63a2d115215d2f54a4851b3f8
   }
 }

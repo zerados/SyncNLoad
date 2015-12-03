@@ -17,7 +17,7 @@
     }
     <!-- should be custom username but fuck doing that now -->
     var name = "user"+parseInt(99999*Math.random());
-    var conn = new WebSocket("ws://localhost:8000/test");
+    var conn = new WebSocket("ws://localhost:8000/AMG/test/wtf");
     conn.onmessage = function(ev){
         try{
             var data = JSON.parse(ev.data)
@@ -84,7 +84,6 @@
             }
         });
     }
-
     // 4. The API will call this function when the video player is ready.
     function onPlayerReady(event) {
         conn.send(JSON.stringify({"command" : "join"}))
@@ -102,7 +101,13 @@
             if(control){
                 conn.send(JSON.stringify({"command": "play", "time": event.target.getCurrentTime()}));
             }
+            else if(event.data == YT.PlayerState.ENDED){
+                videoEnded();
+            }
         }
+    }
+    function videoEnded(){
+        //placeholder function for user to overwrite
     }
     function stopVideo() {
         player.stopVideo();
