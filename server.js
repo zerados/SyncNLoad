@@ -14,7 +14,6 @@ var videoPlaylist = [];
 var database = config.dbUrl;
 
 //functions
-
 server.all('/', function(req, res, next) {
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Headers", "X-Requested-With");
@@ -28,6 +27,22 @@ server.get('/video/:index', function (req, res, next) {
 server.get('/videos', function (req, res, next) {
 	res.json(videoPlaylist);
 	next()
+})
+
+
+server.delete('/video/:index', function (req, res) {
+	var success = false;
+	var videoToBeRemoved = videoPlaylist[req.params.index];
+
+	videoPlaylist.splice(videoToBeRemoved, 1);
+
+	if (videoToBeRemoved !== videoPlaylist[req.params.id]) {
+		//statuscode for successful deletion...
+		res.status(200).send();
+	} else {
+		//statuscode for failure...
+		res.status(404).send();
+	}
 })
 
 server.post('/video/:id', function (req, res, next) {
@@ -132,7 +147,6 @@ wss.on('connection', function connection(ws) {
 
 	});
 });
-
 server.listen(5600);
 
 function download(url, callback) {
