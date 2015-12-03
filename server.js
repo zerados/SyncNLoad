@@ -16,6 +16,8 @@ var videoPlaylist = [];
 var controlClient = null;
 var database = config.dbUrl;
 
+//static content
+app.use('/static', express.static('static'))
 //functions
 app.all('*', function(req, res, next) {
 	res.header("Access-Control-Allow-Origin", "*");
