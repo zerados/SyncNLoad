@@ -45,6 +45,7 @@ server.delete('/video/:index', function (req, res) {
 })
 
 server.post('/video/:id', function (req, res, next) {
+
 	var url = 'https://www.googleapis.com/youtube/v3/videos?id=' +
 	req.params.id +
 	'&key=AIzaSyD5r6DidTnUh1vfhNJ8uLA5J1ZB0RfSoGc%20&' + 
@@ -146,7 +147,6 @@ wss.on('connection', function connection(ws) {
 
 	});
 });
-
 server.listen(5600);
 
 function download(url, callback) {
