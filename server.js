@@ -145,7 +145,7 @@ wss.on('connection', function connection(ws) {
 
 	});
 });
-server.listen(5600);
+server.listen(process.env.PORT || 5600);
 
 function download(url, callback) {
 	https.get(url, function(res) {
