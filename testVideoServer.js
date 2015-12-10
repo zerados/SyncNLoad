@@ -1,3 +1,4 @@
+//Morten coded this, Eric helped testing
 var controlClient = null;
 var clientsWaitingForUpdate = [];
 var WebSocketServer = require('ws').Server
