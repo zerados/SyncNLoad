@@ -42,6 +42,22 @@ server.delete('/video/:index', function (req, res) {
 		res.status(404).send();
 	}
 })
+server.delete('/videos', function (req, res) {
+	
+	videoPlaylist.forEach(function each(video) {
+		video.played = "deleted";
+	}
+
+	videoPlaylist = [];
+
+	if (videoPlaylist.length === 0) {
+		//statuscode for successful deletion...
+		res.status(200).send();
+	} else {
+		//statuscode for failure...
+		res.status(500).send();
+	}
+})
 server.post('/video/:id', function (req, res, next) {
 
 	var url = 'https://www.googleapis.com/youtube/v3/videos?id=' +
