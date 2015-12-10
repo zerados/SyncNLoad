@@ -83,7 +83,6 @@ app.delete('/videos', function (req, res) {
 	});
 
 	videoPlaylist = [];
-
 	if (videoPlaylist.length === 0) {
 		//statuscode for successful deletion...
 		res.status(200).send();
@@ -93,7 +92,15 @@ app.delete('/videos', function (req, res) {
 	}
 })
 app.post('/video/:id', function (req, res, next) {
-
+	if (videoPlaylist.length === 0) {
+		//statuscode for successful deletion...
+		res.status(200).send();
+	} else {
+		//statuscode for failure...
+		res.status(500).send();
+	}
+})
+app.post('/video/:id', function (req, res, next) {
 	var url = 'https://www.googleapis.com/youtube/v3/videos?id=' +
 		req.params.id +
 		'&key=AIzaSyD5r6DidTnUh1vfhNJ8uLA5J1ZB0RfSoGc%20&' +
