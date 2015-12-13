@@ -115,9 +115,8 @@ app.post('/video/:id', function (req, res, next) {
 				"url" : "https://www.youtube.com/watch?v=" + jsonData.items[0].id,
 				"status" : "unPlayed"
 			}
-			//add videoObject to the playlist array.
 
-
+			//save object in the database & add it to the playlist array.
 			mongodb.connect(database, function (err, db) {
 				var collection = db.collection('addedVideos');
 
