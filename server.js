@@ -53,9 +53,7 @@ app.delete('/video/:index', function (req, res) {
 
 	videoPlaylist.splice(videoToBeRemoved, 1);
 	status = {"status" : "deleted"};
-	console.log("DOING STUPID SHIT : " + req.params.index)
 	if(req.params.index === "0"){
-		console.log("DOING STUPID SHIT : " + req.params.index)
 		status.status = "played";
 	}
 	mongodb.connect(database, function (err, db) {
