@@ -1,3 +1,4 @@
+//individual methods have further descriptions if needed otherwise this have been done as a group
 var server = require('http').createServer()
 	, url = require('url')
 	, WebSocketServer = require('ws').Server
@@ -25,6 +26,17 @@ app.all('*', function(req, res, next) {
 	res.header("Access-Control-Allow-Headers", "X-Requested-With");
 	next();
 });
+
+app.get('/video/archive', function (req, res) {
+	mongodb.connect(database, function (err, db) {
+		var collection = db.collection('addedVideos');
+		collection.find({$or: [{'status' : 'played'}, {'status' : 'deleted'}]}).toArray(function (err, result) {
+			videoPlaylist = result;
+			db.close();
+			res.json(result);
+		});
+	});
+})
 app.get('/video/:index', function (req, res, next) {
 	res.json(videoPlaylist[req.params.index]);
 	next();
@@ -34,12 +46,27 @@ app.get('/videos', function (req, res, next) {
 	res.json(videoPlaylist);
 	next()
 })
+//Made by Eric and Gordon
+//Morten Modified late in the process
 app.delete('/video/:index', function (req, res) {
 	var success = false;
 	var videoToBeRemoved = videoPlaylist[req.params.index];
 
 	videoPlaylist.splice(videoToBeRemoved, 1);
+	status = {"status" : "deleted"};
+	console.log("DOING STUPID SHIT : " + req.params.index)
+	if(req.params.index === "0"){
+		console.log("DOING STUPID SHIT : " + req.params.index)
+		status.status = "played";
+	}
+	mongodb.connect(database, function (err, db) {
+		var collection = db.collection('addedVideos');
 
+		collection.updateOne({"_id" : videoToBeRemoved._id}, {$set : status}, function (err, result) {
+			console.log("Deleted the following object in the database: " + JSON.stringify(result));
+			db.close();
+		});
+	});
 	if (videoToBeRemoved !== videoPlaylist[req.params.id]) {
 		//statuscode for successful deletion...
 		res.status(200).send();
@@ -48,8 +75,30 @@ app.delete('/video/:index', function (req, res) {
 		res.status(404).send();
 	}
 })
-app.post('/video/:id', function (req, res, next) {
+//Coded by Eric And Morten
+app.delete('/videos', function (req, res) {
 
+	mongodb.connect(database, function (err, db) {
+		var collection = db.collection('addedVideos');
+
+		collection.updateMany({"status" : "unPlayed"}, {$set: {"status" : "deleted"}}, {multi : true}, function (err, result) {
+			console.log("deleted: " + JSON.stringify(result));
+			db.close();
+		});
+	});
+
+	videoPlaylist = [];
+	if (videoPlaylist.length === 0) {
+		//statuscode for successful deletion...
+		res.status(200).send();
+	} else {
+		//statuscode for failure...
+		res.status(500).send();
+	}
+})
+//Eric and gordon did the implenentation
+//Morten helped modify after intiial implenetation
+app.post('/video/:id', function (req, res, next) {
 	var url = 'https://www.googleapis.com/youtube/v3/videos?id=' +
 		req.params.id +
 		'&key=AIzaSyD5r6DidTnUh1vfhNJ8uLA5J1ZB0RfSoGc%20&' +
@@ -67,16 +116,17 @@ app.post('/video/:id', function (req, res, next) {
 				"player" : jsonData.items[0].player.embedHtml,
 				"duration" : jsonData.items[0].contentDetails.duration,
 				"url" : "https://www.youtube.com/watch?v=" + jsonData.items[0].id,
-				"played" : "unPlayed"
+				"status" : "unPlayed"
 			}
 			//add videoObject to the playlist array.
-			videoPlaylist.push(videoObject);
+
 
 			mongodb.connect(database, function (err, db) {
 				var collection = db.collection('addedVideos');
 
 				collection.insert(videoObject, function (err, result) {
-					console.log("Logged the following object in the database: " + JSON.stringify(result));
+					console.log("Logged the following object in the database: " + JSON.stringify(result.ops[0]));
+					videoPlaylist.push(result.ops[0]);
 					db.close();
 				});
 			});
@@ -89,6 +139,7 @@ app.post('/video/:id', function (req, res, next) {
 		next();
 	})
 })
+//Morten
 wss.broadcast = function broadcast(data, messageClient) {
 	wss.clients.forEach(function each(client) {
 		if(messageClient != client){
@@ -98,6 +149,7 @@ wss.broadcast = function broadcast(data, messageClient) {
 	});
 };
 
+//Morten
 wss.on('connection', function connection(ws) {
 	ws.on('message', function incoming(message) {
 		var message = JSON.parse(message);
@@ -156,7 +208,7 @@ function download(url, callback) {
 		callback();
 	});
 };
-
+//heavily influenced by stackoverflow implenented by Eric, Morten
 function validDuration(duration) {
 	var reptms = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/;
 	var hours = 0, minutes = 0, seconds = 0, totalInSeconds;
@@ -188,11 +240,12 @@ function validDuration(duration) {
 	 */
 }
 //function to be run when server starts
+//Morten
 function init(){
 	mongodb.connect(database, function (err, db) {
 		var collection = db.collection('addedVideos');
 
-		collection.find({"played" : "unPlayed"}).toArray(function (err, result) {
+		collection.find({"status" : "unPlayed"}).toArray(function (err, result) {
 			videoPlaylist = result;
 			db.close();
 		});
