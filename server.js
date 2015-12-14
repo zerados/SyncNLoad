@@ -49,7 +49,7 @@ app.delete('/video/:index', function (req, res) {
 	var videoToBeRemoved = videoPlaylist[req.params.index];
 
 	videoPlaylist.splice(videoToBeRemoved, 1);
-	status = {"status" : "deleted"};
+	var status = {"status" : "deleted"};
 	console.log("DOING STUPID SHIT : " + req.params.index)
 	if(req.params.index === "0"){
 		console.log("DOING STUPID SHIT : " + req.params.index)
@@ -169,11 +169,13 @@ wss.on('connection', function connection(ws) {
 			}
 
 		} else if(message.command === "update"){
-			clientsWaitingForUpdate.forEach(function each(client){
-				client.send(JSON.stringify(message));
-				console.log("trying to update joining clients")
-			})
-			clientsWaitingForUpdate =[];
+			if(clientsWaitingForUpdate.length > 0){
+				clientsWaitingForUpdate.forEach(function each(client){
+					client.send(JSON.stringify(message));
+					console.log("trying to update joining clients")
+				})
+				clientsWaitingForUpdate =[];
+			}
 		}
 		else{
 			//normal broadcasts only broadcasts if user have control
