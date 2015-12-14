@@ -49,14 +49,14 @@ app.get('/videos', function (req, res, next) {
 //Morten Modified late in the process
 app.delete('/video/:index', function (req, res) {
 	var success = false;
-	var videoToBeRemoved = videoPlaylist[req.params.index];
+	var videoToBeRemoved = videoPlaylist.splice(req.params.index, 1);
 
-	videoPlaylist.splice(videoToBeRemoved, 1);
 	var status = {"status" : "deleted"};
 	console.log("DOING STUPID SHIT : " + req.params.index)
 	if(req.params.index === "0"){
 		status.status = "played";
 	}
+	console.log(JSON.stringify(status))
 	mongodb.connect(database, function (err, db) {
 		var collection = db.collection('addedVideos');
 
