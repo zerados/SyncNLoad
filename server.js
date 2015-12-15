@@ -30,7 +30,6 @@ app.get('/video/archive', function (req, res) {
 	mongodb.connect(database, function (err, db) {
 		var collection = db.collection('addedVideos');
 		collection.find({$or: [{'status' : 'played'}, {'status' : 'deleted'}]}).toArray(function (err, result) {
-			videoPlaylist = result;
 			db.close();
 			res.json(result);
 		});
